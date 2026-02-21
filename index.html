@@ -93,6 +93,23 @@ th{background:var(--secondary);color:white;}
     body{background:white;}
     button{display:none;}
 }
+@media print {
+    body {
+        background: white !important;
+    }
+
+    button {
+        display: none !important;
+    }
+
+    table, tr, td {
+        page-break-inside: avoid !important;
+    }
+
+    .signature {
+        page-break-inside: avoid !important;
+    }
+}
 </style>
 </head>
 
@@ -370,14 +387,28 @@ function exportPDF() {
 
     const element = document.getElementById("reportArea");
 
-    html2pdf().from(element).set({
-        margin: 10,
-        filename: `Exam_Report_${grade}_${section}.pdf`,
-        image: { type: "jpeg", quality: 1 },
-        html2canvas: { scale: 3 },
-        jsPDF: { unit: "mm", format: "a4" }
-    }).save();
+    const opt = {
+        margin:       [10, 10, 10, 10],
+        filename:     `Exam_Report_${grade}_${section}.pdf`,
+        image:        { type: 'jpeg', quality: 1 },
+        html2canvas:  { 
+            scale: 2,
+            useCORS: true,
+            scrollY: 0
+        },
+        jsPDF:        { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait' 
+        },
+        pagebreak: { 
+            mode: ['avoid-all', 'css', 'legacy'] 
+        }
+    };
+
+    html2pdf().set(opt).from(element).save();
 }
+
 </script>
 
 </body>
