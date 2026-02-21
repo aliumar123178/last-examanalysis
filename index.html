@@ -1,0 +1,384 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rezan Academy | Professional Exam Analysis</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+<style>
+:root{
+    --primary:#1e3c72;
+    --secondary:#2a5298;
+    --low:#f8d7da;
+    --medium:#fff3cd;
+    --high:#d4edda;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+
+body{
+    background:linear-gradient(135deg,#1e3c72,#2a5298);
+    padding:20px;
+}
+
+.container{
+    background:white;
+    max-width:1200px;
+    margin:auto;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.3);
+}
+
+.header{text-align:center;margin-bottom:20px;}
+.header img{width:110px;}
+.header h1{color:var(--primary);}
+
+input,select{
+    padding:8px;
+    width:100%;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+button{
+    padding:8px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+    margin:5px 5px 5px 0;
+}
+
+.primary{background:var(--primary);color:white;}
+.secondary{background:#555;color:white;}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+
+th{background:var(--secondary);color:white;}
+
+.low{background:var(--low);}
+.medium{background:var(--medium);}
+.high{background:var(--high);}
+.total{background:var(--primary);color:white;font-weight:bold;}
+
+.signature{
+    margin-top:40px;
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+@media (max-width:768px){
+    .signature{
+        flex-direction:column;
+    }
+}
+
+@media print{
+    body{background:white;}
+    button{display:none;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="reportArea">
+
+<div class="header">
+<img src="assets/logo.png">
+<h1>Rezan Academy Exam Analysis Report</h1>
+<p id="reportDate"></p>
+</div>
+
+<!-- TEACHER & CLASS INFORMATION -->
+<h3>Teacher & Class Information</h3>
+<table>
+<tr>
+<td><input type="text" id="teacherName" placeholder="Teacher Name"></td>
+<td><input type="text" id="coordinatorName" placeholder="Academic Coordinator"></td>
+</tr>
+
+<tr>
+<td>
+    <select id="grade">
+        <option value="">Select Grade</option>
+        <script>
+            for (let i = 1; i <= 12; i++) {
+                document.write(`<option value="Grade ${i}">Grade ${i}</option>`);
+            }
+        </script>
+    </select>
+</td>
+
+<td>
+    <select id="section">
+        <option value="">Select Section</option>
+        <script>
+            for (let i = 1; i <= 12; i++) {
+                document.write(`<option value="Section ${i}">Section ${i}</option>`);
+            }
+        </script>
+    </select>
+</td>
+</tr>
+</table>
+
+<!-- ADD STUDENT -->
+<h3>Add Student</h3>
+<table>
+<tr>
+<th>Name</th>
+<th>Gender</th>
+<th>Score</th>
+<th>Action</th>
+</tr>
+<tr>
+<td><input type="text" id="name"></td>
+<td>
+<select id="gender">
+<option value="male">Male</option>
+<option value="female">Female</option>
+</select>
+</td>
+<td><input type="number" id="score"></td>
+<td><button class="primary" onclick="addStudent()">Add</button></td>
+</tr>
+</table>
+
+<!-- STUDENT LIST -->
+<h3>Student List</h3>
+<table id="studentTable">
+<tr>
+<th>Name</th>
+<th>Gender</th>
+<th>Score</th>
+</tr>
+</table>
+
+<button class="primary" onclick="analyze()">Analyze</button>
+<button class="secondary" onclick="exportExcel()">Export Excel</button>
+<button class="secondary" onclick="window.print()">Print</button>
+
+<!-- ANALYSIS -->
+<h3>Analysis Report</h3>
+<table id="analysisTable">
+<tr>
+<th>Category</th>
+<th>Count</th>
+<th>Percentage</th>
+</tr>
+</table>
+
+<!-- REFLECTION -->
+<h3 style="margin-top:40px;">Teacher Reflection & Improvement Plan</h3>
+
+<div style="margin-top:10px;">
+    <strong>Reason for Low Achievement:</strong>
+    <textarea id="reasonLow" style="width:100%; height:70px;"></textarea>
+</div>
+
+<div style="margin-top:20px;">
+    <strong>Measures to Improve Results:</strong>
+    <textarea id="measuresImprove" style="width:100%; height:70px;"></textarea>
+</div>
+
+<!-- SIGNATURE -->
+<div class="signature">
+
+<div style="width:48%;">
+    <strong>Teacher Signature:</strong><br>
+    <canvas id="teacherCanvas" style="width:100%; height:120px; border:1px solid #000;"></canvas><br>
+    Date: <span id="teacherDate"></span>
+</div>
+
+<div style="width:48%;">
+    <strong>Coordinator Signature:</strong><br>
+    <canvas id="coordCanvas" style="width:100%; height:120px; border:1px solid #000;"></canvas><br>
+    Date: <span id="coordDate"></span>
+</div>
+
+</div>
+
+<!-- EXPORT -->
+<div style="margin-top:30px; text-align:center;">
+    <button class="primary" onclick="exportPDF()">
+        Download Final PDF Report
+    </button>
+</div>
+
+</div>
+
+<script>
+document.getElementById("reportDate").innerHTML =
+"Date: " + new Date().toLocaleDateString();
+
+let students = [];
+let analyzed = false;
+
+/* STUDENT MANAGEMENT */
+function addStudent() {
+    let name = document.getElementById("name").value.trim();
+    let gender = document.getElementById("gender").value;
+    let score = parseInt(document.getElementById("score").value);
+
+    if (name === "" || isNaN(score) || score < 0 || score > 30) {
+        alert("Enter valid name and score (0–30)");
+        return;
+    }
+
+    students.push({ name, gender, score });
+    updateStudentTable();
+
+    document.getElementById("name").value = "";
+    document.getElementById("score").value = "";
+}
+
+function updateStudentTable() {
+    let table = document.getElementById("studentTable");
+
+    table.innerHTML = `
+        <tr>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Score</th>
+            <th>Action</th>
+        </tr>
+    `;
+
+    students.forEach((s, index) => {
+        table.innerHTML += `
+        <tr>
+            <td>${s.name}</td>
+            <td>${s.gender}</td>
+            <td>${s.score}</td>
+            <td>
+                <button class="primary" onclick="editStudent(${index})">Edit</button>
+                <button class="secondary" onclick="deleteStudent(${index})">Delete</button>
+            </td>
+        </tr>`;
+    });
+}
+
+/* ANALYSIS */
+function analyze() {
+    if (students.length === 0) {
+        alert("No students added");
+        return;
+    }
+
+    analyzed = true;
+    let total = students.length;
+
+    let lowFemale = 0, lowMale = 0;
+    let mediumFemale = 0, mediumMale = 0;
+    let highFemale = 0, highMale = 0;
+
+    students.forEach(s => {
+        if (s.score < 24) {
+            s.gender === "female" ? lowFemale++ : lowMale++;
+        } else if (s.score < 28.5) {
+            s.gender === "female" ? mediumFemale++ : mediumMale++;
+        } else {
+            s.gender === "female" ? highFemale++ : highMale++;
+        }
+    });
+
+    let table = document.getElementById("analysisTable");
+
+    table.innerHTML = `
+        <tr>
+            <th>Category</th>
+            <th>Count</th>
+            <th>Percentage</th>
+        </tr>
+    `;
+
+    function addRow(title, count) {
+        let percent = ((count / total) * 100).toFixed(1);
+        table.innerHTML += `
+            <tr>
+                <td>${title}</td>
+                <td>${count}</td>
+                <td>${percent}%</td>
+            </tr>`;
+    }
+
+    addRow("Low Female", lowFemale);
+    addRow("Low Male", lowMale);
+    addRow("Medium Female", mediumFemale);
+    addRow("Medium Male", mediumMale);
+    addRow("High Female", highFemale);
+    addRow("High Male", highMale);
+    addRow("Grand Total", total);
+}
+
+/* SIGNATURE */
+const teacherSignature = new SignaturePad(document.getElementById("teacherCanvas"));
+const coordSignature = new SignaturePad(document.getElementById("coordCanvas"));
+
+teacherSignature.onEnd = () =>
+    document.getElementById("teacherDate").innerText = new Date().toLocaleDateString();
+
+coordSignature.onEnd = () =>
+    document.getElementById("coordDate").innerText = new Date().toLocaleDateString();
+
+/* EXPORT */
+function exportExcel() {
+    if (!analyzed) return alert("Analyze first.");
+
+    let wb = XLSX.utils.book_new();
+    let ws = XLSX.utils.table_to_sheet(document.getElementById("analysisTable"));
+    XLSX.utils.book_append_sheet(wb, ws, "Analysis");
+    XLSX.writeFile(wb, "Exam_Analysis.xlsx");
+}
+
+function updateReportHeader() {
+    let grade = document.getElementById("grade").value || "Not Selected";
+    let section = document.getElementById("section").value || "Not Selected";
+
+    document.getElementById("reportDate").innerHTML =
+        "Date: " + new Date().toLocaleDateString() +
+        "<br>Grade: " + grade +
+        "<br>Section: " + section;
+}
+
+function exportPDF() {
+    if (!analyzed) return alert("Analyze first.");
+    if (teacherSignature.isEmpty() || coordSignature.isEmpty())
+        return alert("Signatures required.");
+
+    updateReportHeader();
+
+    let grade = document.getElementById("grade").value || "Grade";
+    let section = document.getElementById("section").value || "Section";
+
+    const element = document.getElementById("reportArea");
+
+    html2pdf().from(element).set({
+        margin: 10,
+        filename: `Exam_Report_${grade}_${section}.pdf`,
+        image: { type: "jpeg", quality: 1 },
+        html2canvas: { scale: 3 },
+        jsPDF: { unit: "mm", format: "a4" }
+    }).save();
+}
+</script>
+
+</body>
+</html>
