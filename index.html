@@ -184,7 +184,7 @@ th{background:var(--secondary);color:white;}
 </select>
 </td>
 <td><input type="number" id="score"></td>
-<td><button class="primary" onclick="addStudent()">Add</button></td>
+<td><button id="addBtn" class="primary" onclick="addStudent()">Add</button></td>
 </tr>
 </table>
 
@@ -306,6 +306,48 @@ function updateStudentTable() {
             </td>
         </tr>`;
     });
+}
+/* EDIT - SAVE - DELETE */
+
+function editStudent(index) {
+    document.getElementById("name").value = students[index].name;
+    document.getElementById("gender").value = students[index].gender;
+    document.getElementById("score").value = students[index].score;
+
+    const addBtn = document.getElementById("addBtn");
+    addBtn.textContent = "Save";
+    addBtn.onclick = function () {
+        saveStudent(index);
+    };
+}
+
+function saveStudent(index) {
+    let name = document.getElementById("name").value.trim();
+    let gender = document.getElementById("gender").value;
+    let score = parseInt(document.getElementById("score").value);
+
+    if (name === "" || isNaN(score) || score < 0 || score > 30) {
+        alert("Enter valid data");
+        return;
+    }
+
+    students[index] = { name, gender, score };
+
+    document.getElementById("name").value = "";
+    document.getElementById("score").value = "";
+
+    const addBtn = document.getElementById("addBtn");
+    addBtn.textContent = "Add";
+    addBtn.onclick = addStudent;
+
+    updateStudentTable();
+}
+
+function deleteStudent(index) {
+    if (confirm("Remove this student?")) {
+        students.splice(index, 1);
+        updateStudentTable();
+    }
 }
 
 /* ANALYSIS */
