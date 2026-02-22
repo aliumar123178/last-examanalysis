@@ -252,9 +252,8 @@ th{background:var(--secondary);color:white;}
 
 <!-- FOOTER -->
 <div class="footer">
-    Developed by Rezan Academy ICT Department
+    © <span id="year"></span> Rezan Academy . All Rights Reserved.
 </div>
-
 </div>  <!-- END reportArea -->
 
 <script>
@@ -466,7 +465,7 @@ function exportPDF() {
 
     html2pdf().set(opt).from(element).save();
 }
-
+document.getElementById("year").innerText = new Date().getFullYear();
 </script>
 
 </body>
